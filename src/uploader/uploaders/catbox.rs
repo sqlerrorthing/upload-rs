@@ -22,8 +22,8 @@ impl Catbox {
         }
     }
 
-    pub fn instance() -> &'static Mutex<Catbox> {
-        static INSTANCE: Lazy<Mutex<Catbox>> = Lazy::new(|| Mutex::new(Catbox::new()));
+    pub fn instance() -> &'static Catbox {
+        static INSTANCE: Lazy<Catbox> = Lazy::new(|| Catbox::new());
         &INSTANCE
     }
 }

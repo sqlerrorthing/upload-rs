@@ -1258,6 +1258,7 @@ dependencies = [
  "mime_guess",
  "once_cell",
  "reqwest",
+ "serde_json",
  "tokio",
  "tokio-macros",
 ]

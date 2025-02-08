@@ -1,12 +1,13 @@
-use crate::uploader::{Catbox, UploadError, Uploader};
+use std::ops::Deref;
+use crate::uploader::{Catbox, FileIo, UploadError, Uploader};
 
 mod uploader;
 
 #[tokio::main]
 async fn main() {
     let file_path = std::path::Path::new("txt.txt");
-    let catbox = Catbox::instance().lock().unwrap();
-    let result = catbox.upload(file_path);
+    let uploader = FileIo::instance();
+    let result = uploader.upload(file_path);
 
     match result.await {
         Ok(link) => {println!("{:?}", link);}
