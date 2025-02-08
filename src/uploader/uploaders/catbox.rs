@@ -1,6 +1,9 @@
+use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 use std::sync::Mutex;
 use once_cell::sync::Lazy;
+use reqwest::{multipart, Client};
 use crate::uploader::uploader::{UploadError, Uploader};
 use crate::uploader::UploaderConfig;
 
@@ -14,13 +17,13 @@ impl Catbox {
             config: UploaderConfig::new (
                 "catbox",
                 &(200 * 1024 * 1024),
-                &vec!["exe", "scr", "cpl", "doc", "docx", "jar"]
+                &["exe", "scr", "cpl", "doc", "docx", "jar"]
             )
         }
     }
 
-    fn instance() -> &'static Mutex<Self> {
-        static INSTANCE: Lazy<Mutex<Catbox>> = Lazy::new(|| Mutex::new(Self::new()));
+    pub fn instance() -> &'static Mutex<Catbox> {
+        static INSTANCE: Lazy<Mutex<Catbox>> = Lazy::new(|| Mutex::new(Catbox::new()));
         &INSTANCE
     }
 }
@@ -30,7 +33,22 @@ impl Uploader for Catbox {
         &self.config
     }
 
-    fn do_upload_internal(&self, file: &Path) -> Result<String, UploadError> {
+    async fn do_upload_internal(&self, _: &Path, file_name: String, file_content: Vec<u8>, mime_type: String) -> Result<String, UploadError> {
+        let form = multipart::Form::new()
+            .text("reqtype", "fileupload")
+            .text("userhash", "")
+            .part("fileToUpload", multipart::Part::bytes(file_content)
+                .file_name(file_name)
+                .mime_str(&*mime_type)?);
 
+        let client = Client::new();
+        let response = client.post("https://catbox.moe/user/api.php")
+            .multipart(form)
+            .send()
+            .await?;
+
+        let response_text = response.text().await?;
+
+        Ok(response_text)
     }
 }

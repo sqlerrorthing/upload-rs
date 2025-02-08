@@ -1,4 +1,5 @@
 mod uploader;
 mod uploaders;
 
-pub use uploader::UploaderConfig;
+pub use uploader::*;
+pub use uploaders::*;
