@@ -28,7 +28,7 @@ impl Catbox {
     }
 }
 
-impl Uploader for Catbox {
+impl Uploader for &Catbox {
     fn get_config(&self) -> &UploaderConfig {
         &self.config
     }
@@ -50,5 +50,11 @@ impl Uploader for Catbox {
         let response_text = response.text().await?;
 
         Ok(response_text)
+    }
+}
+
+impl Default for &Catbox {
+    fn default() -> Self {
+        Catbox::instance()
     }
 }

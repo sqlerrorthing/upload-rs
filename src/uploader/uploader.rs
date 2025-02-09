@@ -2,11 +2,12 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{Error, Read};
 use std::path::Path;
+use enum_dispatch::enum_dispatch;
 use crate::uploader::uploader::UploadError::{MaxFilesizeLimitsReached, NotAllowedExtension};
 use reqwest::Error as RError;
 
 pub struct UploaderConfig {
-    name: &'static str,
+    pub name: &'static str,
     max_file_size: &'static u64,
     blocked_extensions: &'static [&'static str],
 }
@@ -41,6 +42,7 @@ impl From<RError> for UploadError {
     }
 }
 
+#[enum_dispatch]
 pub trait Uploader {
     async fn upload(&self, file: &Path) -> Result<String, UploadError> {
         if file.metadata()?.len() > *self.get_config().max_file_size {
@@ -75,5 +77,11 @@ pub trait Uploader {
 
     fn get_config(&self) -> &UploaderConfig;
 
-    async fn do_upload_internal(&self, path: &Path, file_name: String, file_content: Vec<u8>, mime_type: String) -> Result<String, UploadError>;
+    async fn do_upload_internal(
+        &self, 
+        path: &Path, 
+        file_name: String, 
+        file_content: Vec<u8>, 
+        mime_type: String
+    ) -> Result<String, UploadError>;
 }

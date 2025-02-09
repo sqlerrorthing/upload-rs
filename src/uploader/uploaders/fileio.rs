@@ -9,10 +9,10 @@ pub struct FileIo {
 }
 
 impl FileIo {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             config: UploaderConfig::new(
-                "FileIo",
+                "fileio",
                 &(4 * 1024 * 1024 * 1024),
                 &[]
             )
@@ -25,12 +25,12 @@ impl FileIo {
     }
 }
 
-impl Uploader for FileIo {
+impl Uploader for &FileIo {
     fn get_config(&self) -> &UploaderConfig {
         &self.config
     }
 
-    async fn do_upload_internal(&self, path: &Path, file_name: String, file_content: Vec<u8>, mime_type: String) -> Result<String, UploadError> {
+    async fn do_upload_internal(&self, _: &Path, file_name: String, file_content: Vec<u8>, mime_type: String) -> Result<String, UploadError> {
         let client = Client::new();
         let form = reqwest::multipart::Form::new()
             .part("file", reqwest::multipart::Part::bytes(file_content)
@@ -46,5 +46,11 @@ impl Uploader for FileIo {
         let json: serde_json::Value = response.json().await?;
 
         Ok(json["link"].as_str().unwrap().into())
+    }
+}
+
+impl Default for &FileIo {
+    fn default() -> Self {
+        FileIo::instance()
     }
 }
